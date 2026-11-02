@@ -6,16 +6,30 @@ from .models import Favorite, Review, Tour
 class TourSerializer(serializers.ModelSerializer):
     # это поле считается в методе get_free_places, в базе его нет
     free_places = serializers.SerializerMethodField()
+    # средний рейтинг тоже считается в методе
+    average_rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Tour
         fields = ('id', 'title', 'description', 'place', 'guide', 'price', 'days',
-                  'start_date', 'max_people', 'image', 'created_at', 'free_places')
+                  'start_date', 'max_people', 'image', 'created_at', 'free_places', 'average_rating')
         # гида берём из токена, сам пользователь его не указывает
         read_only_fields = ('guide',)
 
     def get_free_places(self, obj):
         return obj.free_places()
+
+    def get_average_rating(self, obj):
+        total = 0
+        count = 0
+        for review in obj.reviews.all():
+            total = total + review.rating
+            count = count + 1
+
+        # если отзывов нет, делить на ноль нельзя
+        if count == 0:
+            return 0
+        return round(total / count, 1)
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
