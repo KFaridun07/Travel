@@ -22,6 +22,15 @@ class Tour(models.Model):
     def __str__(self):
         return self.title
 
+    def free_places(self):
+        # считаем, сколько человек уже забронировали этот тур
+        booked = 0
+        for booking in self.bookings.all():
+            # отменённые брони места не занимают
+            if booking.status != 'cancelled':
+                booked = booked + booking.people_count
+        return self.max_people - booked
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
