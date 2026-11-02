@@ -1,13 +1,14 @@
 import base64
 import json
 import os
-import anthropic
+import groq
 from dotenv import load_dotenv
 
 # читаем ключ из файла .env
 load_dotenv()
 
-MODEL = 'claude-opus-5-5'
+# эта модель понимает и текст, и картинки
+MODEL = 'qwen/qwen3.8-27b'
 
 
 class AIServiceError(Exception):
@@ -15,56 +16,42 @@ class AIServiceError(Exception):
     pass
 
 
-def ask_claude(content):
-    # отправляет запрос в Claude и возвращает ответ текстом
-    api_key = os.getenv('ANTHROPIC_API_KEY')
+def ask_groq(content):
+    # отправляет запрос в Groq и возвращает ответ текстом
+    api_key = os.getenv('GROQ_API_KEY')
     if not api_key:
-        raise AIServiceError('Не задан ключ ANTHROPIC_API_KEY в файле .env')
+        raise AIServiceError('Не задан ключ GROQ_API_KEY в файле .env')
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = groq.Groq(api_key=api_key)
 
     try:
-        response = client.beta.messages.create(
+        response = client.chat.completions.create(
             model=MODEL,
-            max_tokens=16000,
-            # если модель откажется отвечать, запрос сам перейдёт на запасную модель
-            betas=['server-side-fallback-2026-07-01'],
-            fallbacks='default',
+            max_completion_tokens=4096,
+            # прячем рассуждения модели, нам нужен только готовый ответ
+            reasoning_format='hidden',
             messages=[{'role': 'user', 'content': content}],
         )
-    except anthropic.AuthenticationError:
-        raise AIServiceError('Неправильный ключ ANTHROPIC_API_KEY')
-    except anthropic.RateLimitError:
+    except groq.AuthenticationError:
+        raise AIServiceError('Неправильный ключ GROQ_API_KEY')
+    except groq.RateLimitError:
         raise AIServiceError('Слишком много запросов к AI, попробуйте позже')
-    except anthropic.APIStatusError:
+    except groq.APIStatusError:
         raise AIServiceError('Сервис AI вернул ошибку, попробуйте позже')
-    except anthropic.APIConnectionError:
+    except groq.APIConnectionError:
         raise AIServiceError('Нет связи с сервисом AI, попробуйте позже')
 
-    if response.stop_reason == 'refusal':
-        raise AIServiceError('AI отказался отвечать на этот запрос')
-
-    # ответ состоит из блоков, нам нужны только текстовые
-    text = ''
-    for block in response.content:
-        if block.type == 'text':
-            text = text + block.text
+    text = response.choices[0].message.content
+    if not text:
+        raise AIServiceError('AI вернул пустой ответ, попробуйте ещё раз')
     return text
 
 
 def recognize_place(image):
     # картинку нужно отправить как текст в формате base64
-    image_data = base64.standard_b64encode(image.read()).decode('utf-8')
+    image_data = base64.b64encode(image.read()).decode('utf-8')
 
     content = [
-        {
-            'type': 'image',
-            'source': {
-                'type': 'base64',
-                'media_type': image.content_type,
-                'data': image_data,
-            },
-        },
         {
             'type': 'text',
             'text': 'Определи, какое место или достопримечательность на фото. '
@@ -72,8 +59,14 @@ def recognize_place(image):
                     '{"name": "название", "city": "город", "tags": ["тег", "тег"]}. '
                     'Значения пиши на русском языке.',
         },
+        {
+            'type': 'image_url',
+            'image_url': {
+                'url': 'data:' + image.content_type + ';base64,' + image_data,
+            },
+        },
     ]
-    text = ask_claude(content)
+    text = ask_groq(content)
 
     # AI мог добавить текст вокруг JSON, поэтому берём часть от { до }
     start = text.find('{')
@@ -93,7 +86,7 @@ def ask_consultant(question, tours_text):
         'Список туров:\n' + tours_text + '\n\n'
         'Вопрос клиента: ' + question
     )
-    return ask_claude(content)
+    return ask_groq(content)
 
 
 def make_trip_plan(city, days, budget, interests):
@@ -104,4 +97,4 @@ def make_trip_plan(city, days, budget, interests):
         'Бюджет: ' + str(budget) + '\n'
         'Интересы: ' + interests
     )
-    return ask_claude(content)
+    return ask_groq(content)
