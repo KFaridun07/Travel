@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'places',
     'tours',
     'bookings',
+    'ai',
 
 ]
 
