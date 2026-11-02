@@ -148,3 +148,15 @@ class TripPlanView(generics.GenericAPIView):
         # сохраняем план в базу
         serializer.save(user=request.user, plan=plan)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TripPlanListView(generics.ListAPIView):
+    serializer_class = TripPlanSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Swagger открывает эту страницу без входа, поэтому проверяем пользователя
+        if not self.request.user.is_authenticated:
+            return TripPlan.objects.none()
+        # каждый видит только свои маршруты
+        return TripPlan.objects.filter(user=self.request.user)
