@@ -1,3 +1,5 @@
+import base64
+import json
 import os
 import anthropic
 from dotenv import load_dotenv
@@ -48,3 +50,36 @@ def ask_claude(content):
         if block.type == 'text':
             text = text + block.text
     return text
+
+
+def recognize_place(image):
+    # картинку нужно отправить как текст в формате base64
+    image_data = base64.standard_b64encode(image.read()).decode('utf-8')
+
+    content = [
+        {
+            'type': 'image',
+            'source': {
+                'type': 'base64',
+                'media_type': image.content_type,
+                'data': image_data,
+            },
+        },
+        {
+            'type': 'text',
+            'text': 'Определи, какое место или достопримечательность на фото. '
+                    'Ответь только JSON, без другого текста, в таком виде: '
+                    '{"name": "название", "city": "город", "tags": ["тег", "тег"]}. '
+                    'Значения пиши на русском языке.',
+        },
+    ]
+    text = ask_claude(content)
+
+    # AI мог добавить текст вокруг JSON, поэтому берём часть от { до }
+    start = text.find('{')
+    end = text.rfind('}')
+    try:
+        return json.loads(text[start:end + 1])
+    except ValueError:
+        # AI вернул не JSON
+        return None
