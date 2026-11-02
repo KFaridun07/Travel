@@ -21,3 +21,17 @@ class Tour(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
+    tour = models.ForeignKey(Tour, on_delete=models.CASCADE, related_name='favorites')
+
+    class Meta:
+        # база данных не даст добавить один тур в избранное дважды
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'tour'], name='unique_favorite'),
+        ]
+
+    def __str__(self):
+        return str(self.user) + ' - ' + str(self.tour)
