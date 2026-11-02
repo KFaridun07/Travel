@@ -91,7 +91,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post']
 
     def get_queryset(self):
-        return Review.objects.all()
+        reviews = Review.objects.all()
+
+        # фильтр по туру: ?tour=1
+        tour = self.request.query_params.get('tour')
+        if tour:
+            if not tour.isdecimal() or len(tour) > 10:
+                raise ValidationError({'tour': 'Здесь должно быть целое число'})
+            reviews = reviews.filter(tour=tour)
+
+        return reviews
 
     def get_permissions(self):
         # написать отзыв может только турист
