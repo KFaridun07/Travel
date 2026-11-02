@@ -113,3 +113,15 @@ class ChatView(generics.GenericAPIView):
         # сохраняем вопрос и ответ в базу
         serializer.save(user=request.user, answer=answer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ChatHistoryView(generics.ListAPIView):
+    serializer_class = ChatMessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Swagger открывает эту страницу без входа, поэтому проверяем пользователя
+        if not self.request.user.is_authenticated:
+            return ChatMessage.objects.none()
+        # каждый видит только свою историю
+        return ChatMessage.objects.filter(user=self.request.user)
