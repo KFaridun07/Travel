@@ -18,12 +18,20 @@ class BookingViewSet(viewsets.ModelViewSet):
 
         # админ видит все брони
         if user.role == 'admin':
-            return Booking.objects.all()
+            bookings = Booking.objects.all()
         # гид видит брони своих туров
-        if user.role == 'guide':
-            return Booking.objects.filter(tour__guide=user)
+        elif user.role == 'guide':
+            bookings = Booking.objects.filter(tour__guide=user)
         # турист видит только свои брони
-        return Booking.objects.filter(user=user)
+        else:
+            bookings = Booking.objects.filter(user=user)
+
+        # фильтр по статусу: ?status=pending
+        booking_status = self.request.query_params.get('status')
+        if booking_status:
+            bookings = bookings.filter(status=booking_status)
+
+        return bookings
 
     def get_permissions(self):
         # создать бронь может только турист
