@@ -11,7 +11,19 @@ class PlaceViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
-        return Place.objects.all()
+        places = Place.objects.all()
+
+        # фильтр по городу: /api/places/?city=Душанбе
+        city = self.request.query_params.get('city')
+        if city:
+            places = places.filter(city__icontains=city)
+
+        # поиск по названию: /api/places/?search=озеро
+        search = self.request.query_params.get('search')
+        if search:
+            places = places.filter(name__icontains=search)
+
+        return places
 
     def get_permissions(self):
         # смотреть могут все
