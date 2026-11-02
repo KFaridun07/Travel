@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .models import ChatMessage
 
 
 class PhotoSearchSerializer(serializers.Serializer):
@@ -15,3 +16,14 @@ class PhotoSearchSerializer(serializers.Serializer):
             raise serializers.ValidationError('Картинка должна быть не больше 5 МБ')
 
         return value
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    # ограничиваем длину вопроса
+    question = serializers.CharField(max_length=2000)
+
+    class Meta:
+        model = ChatMessage
+        fields = ('id', 'question', 'answer', 'created_at')
+        # ответ заполняет сервер
+        read_only_fields = ('answer',)

@@ -3,9 +3,11 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from places.models import Place
 from places.serializers import PlaceSerializer
+from tours.models import Tour
 from tours.serializers import TourSerializer
-from .serializers import PhotoSearchSerializer
-from .services import AIServiceError, recognize_place
+from .models import ChatMessage
+from .serializers import ChatMessageSerializer, PhotoSearchSerializer
+from .services import AIServiceError, ask_consultant, recognize_place
 
 
 def clean_text(value):
@@ -84,3 +86,30 @@ class PhotoSearchView(generics.GenericAPIView):
             'place': PlaceSerializer(place, context=context).data,
             'tours': TourSerializer(tours, many=True, context=context).data,
         })
+
+
+class ChatView(generics.GenericAPIView):
+    serializer_class = ChatMessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        question = serializer.validated_data['question']
+
+        # собираем список наших туров текстом
+        tours_text = ''
+        for tour in Tour.objects.all():
+            tours_text = tours_text + '- ' + tour.title + ', город: ' + tour.place.city
+            tours_text = tours_text + ', цена: ' + str(tour.price) + ', дней: ' + str(tour.days) + '\n'
+        if tours_text == '':
+            tours_text = 'Туров пока нет'
+
+        try:
+            answer = ask_consultant(question, tours_text)
+        except AIServiceError as error:
+            return Response({'detail': str(error)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        # сохраняем вопрос и ответ в базу
+        serializer.save(user=request.user, answer=answer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
