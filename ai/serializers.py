@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ChatMessage
+from .models import ChatMessage, TripPlan
 
 
 class PhotoSearchSerializer(serializers.Serializer):
@@ -27,3 +27,14 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         fields = ('id', 'question', 'answer', 'created_at')
         # ответ заполняет сервер
         read_only_fields = ('answer',)
+
+
+class TripPlanSerializer(serializers.ModelSerializer):
+    # ограничиваем длину текста с интересами
+    interests = serializers.CharField(max_length=1000)
+
+    class Meta:
+        model = TripPlan
+        fields = ('id', 'city', 'days', 'budget', 'interests', 'plan', 'created_at')
+        # план заполняет сервер
+        read_only_fields = ('plan',)

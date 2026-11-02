@@ -5,9 +5,9 @@ from places.models import Place
 from places.serializers import PlaceSerializer
 from tours.models import Tour
 from tours.serializers import TourSerializer
-from .models import ChatMessage
-from .serializers import ChatMessageSerializer, PhotoSearchSerializer
-from .services import AIServiceError, ask_consultant, recognize_place
+from .models import ChatMessage, TripPlan
+from .serializers import ChatMessageSerializer, PhotoSearchSerializer, TripPlanSerializer
+from .services import AIServiceError, ask_consultant, make_trip_plan, recognize_place
 
 
 def clean_text(value):
@@ -125,3 +125,26 @@ class ChatHistoryView(generics.ListAPIView):
             return ChatMessage.objects.none()
         # каждый видит только свою историю
         return ChatMessage.objects.filter(user=self.request.user)
+
+
+class TripPlanView(generics.GenericAPIView):
+    serializer_class = TripPlanSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            plan = make_trip_plan(
+                serializer.validated_data['city'],
+                serializer.validated_data['days'],
+                serializer.validated_data['budget'],
+                serializer.validated_data['interests'],
+            )
+        except AIServiceError as error:
+            return Response({'detail': str(error)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        # сохраняем план в базу
+        serializer.save(user=request.user, plan=plan)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
