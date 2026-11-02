@@ -1,9 +1,9 @@
 from rest_framework import permissions, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
-from accounts.permissions import IsGuide, IsOwnerOrAdmin
-from .models import Favorite, Tour
-from .serializers import FavoriteSerializer, TourSerializer
+from accounts.permissions import IsGuide, IsOwnerOrAdmin, IsTourist
+from .models import Favorite, Review, Tour
+from .serializers import FavoriteSerializer, ReviewSerializer, TourSerializer
 
 
 def check_number(value, name):
@@ -80,6 +80,25 @@ class FavoriteViewSet(viewsets.ModelViewSet):
             return Favorite.objects.none()
         # каждый видит только своё избранное
         return Favorite.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    # отзывы можно смотреть и создавать
+    http_method_names = ['get', 'post']
+
+    def get_queryset(self):
+        return Review.objects.all()
+
+    def get_permissions(self):
+        # написать отзыв может только турист
+        if self.action == 'create':
+            return [IsTourist()]
+        # смотреть могут все
+        return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
