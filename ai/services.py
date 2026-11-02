@@ -83,3 +83,14 @@ def recognize_place(image):
     except ValueError:
         # AI вернул не JSON
         return None
+
+
+def ask_consultant(question, tours_text):
+    content = (
+        'Ты консультант туристической платформы TravelMate. '
+        'Советуй туры ТОЛЬКО из списка ниже. '
+        'Если подходящего тура в списке нет, так и скажи.\n\n'
+        'Список туров:\n' + tours_text + '\n\n'
+        'Вопрос клиента: ' + question
+    )
+    return ask_claude(content)
