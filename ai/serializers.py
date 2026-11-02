@@ -6,14 +6,14 @@ class PhotoSearchSerializer(serializers.Serializer):
     image = serializers.ImageField()
 
     def validate_image(self, value):
-        # Claude принимает только такие форматы картинок
-        allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+        # отправляем в AI только самые обычные форматы картинок
+        allowed_types = ['image/jpeg', 'image/png']
         if value.content_type not in allowed_types:
-            raise serializers.ValidationError('Можно загружать только JPEG, PNG, GIF или WEBP')
+            raise serializers.ValidationError('Можно загружать только JPEG или PNG')
 
-        # размер картинки не больше 5 МБ
-        if value.size > 5 * 1024 * 1024:
-            raise serializers.ValidationError('Картинка должна быть не больше 5 МБ')
+        # размер картинки не больше 3 МБ
+        if value.size > 3 * 1024 * 1024:
+            raise serializers.ValidationError('Картинка должна быть не больше 3 МБ')
 
         return value
 
