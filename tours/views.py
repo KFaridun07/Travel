@@ -24,7 +24,13 @@ class TourViewSet(viewsets.ModelViewSet):
         # фильтр по городу места: ?city=Душанбе
         city = self.request.query_params.get('city')
         if city:
-            tours = tours.filter(place__city__icontains=city)
+            # SQLite не умеет искать русские буквы без учёта регистра,
+            # поэтому сравниваем сами обычным циклом
+            found_ids = []
+            for tour in tours:
+                if city.lower() in tour.place.city.lower():
+                    found_ids.append(tour.id)
+            tours = tours.filter(id__in=found_ids)
 
         # цена от: ?price_min=100
         price_min = self.request.query_params.get('price_min')
@@ -49,7 +55,11 @@ class TourViewSet(viewsets.ModelViewSet):
         # поиск по названию: ?search=озеро
         search = self.request.query_params.get('search')
         if search:
-            tours = tours.filter(title__icontains=search)
+            found_ids = []
+            for tour in tours:
+                if search.lower() in tour.title.lower():
+                    found_ids.append(tour.id)
+            tours = tours.filter(id__in=found_ids)
 
         return tours
 

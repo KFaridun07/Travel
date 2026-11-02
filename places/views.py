@@ -16,12 +16,22 @@ class PlaceViewSet(viewsets.ModelViewSet):
         # фильтр по городу: /api/places/?city=Душанбе
         city = self.request.query_params.get('city')
         if city:
-            places = places.filter(city__icontains=city)
+            # SQLite не умеет искать русские буквы без учёта регистра,
+            # поэтому сравниваем сами обычным циклом
+            found_ids = []
+            for place in places:
+                if city.lower() in place.city.lower():
+                    found_ids.append(place.id)
+            places = places.filter(id__in=found_ids)
 
         # поиск по названию: /api/places/?search=озеро
         search = self.request.query_params.get('search')
         if search:
-            places = places.filter(name__icontains=search)
+            found_ids = []
+            for place in places:
+                if search.lower() in place.name.lower():
+                    found_ids.append(place.id)
+            places = places.filter(id__in=found_ids)
 
         return places
 
