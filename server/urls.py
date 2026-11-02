@@ -37,6 +37,7 @@ urlpatterns = [
     # все адреса входа и регистрации начинаются с /api/auth/
     path('api/auth/', include('accounts.urls')),
     path('api/', include('places.urls')),
+    path('api/', include('tours.urls')),
 
     re_path(
         r'^swagger/$',
