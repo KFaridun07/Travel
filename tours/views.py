@@ -2,8 +2,8 @@ from rest_framework import permissions, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
 from accounts.permissions import IsGuide, IsOwnerOrAdmin
-from .models import Tour
-from .serializers import TourSerializer
+from .models import Favorite, Tour
+from .serializers import FavoriteSerializer, TourSerializer
 
 
 def check_number(value, name):
@@ -66,3 +66,20 @@ class TourViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # гид — это тот, чей токен пришёл в запросе
         serializer.save(guide=self.request.user)
+
+
+class FavoriteViewSet(viewsets.ModelViewSet):
+    serializer_class = FavoriteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    # избранное можно смотреть, добавлять и удалять, но не менять
+    http_method_names = ['get', 'post', 'delete']
+
+    def get_queryset(self):
+        # Swagger открывает эту страницу без входа, поэтому проверяем пользователя
+        if not self.request.user.is_authenticated:
+            return Favorite.objects.none()
+        # каждый видит только своё избранное
+        return Favorite.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
