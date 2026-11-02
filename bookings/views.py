@@ -69,3 +69,24 @@ class BookingViewSet(viewsets.ModelViewSet):
         booking.status = 'confirmed'
         booking.save()
         return Response(BookingSerializer(booking).data)
+
+    # POST /api/bookings/{id}/cancel/
+    @action(detail=True, methods=['post'], serializer_class=BookingActionSerializer)
+    def cancel(self, request, pk=None):
+        booking = self.get_object()
+
+        # отменить бронь может только её владелец или админ
+        if booking.user != request.user and request.user.role != 'admin':
+            return Response(
+                {'detail': 'Отменить можно только свою бронь'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        if booking.status == 'cancelled':
+            return Response(
+                {'detail': 'Эта бронь уже отменена'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        booking.status = 'cancelled'
+        booking.save()
+        return Response(BookingSerializer(booking).data)
