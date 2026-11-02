@@ -1,0 +1,35 @@
+{% load static %}<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TravelMate</title>
+    <meta name="description" content="TravelMate: туры, места и AI-помощник для путешествий">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f6f64'/%3E%3Cpath d='M4 25 13 10l5 8 3-4 7 11z' fill='%23fff'/%3E%3C/svg%3E">
+    <script>
+        // ставим тему сразу, чтобы страница не мигала при загрузке
+        var savedTheme = null;
+        try {
+            savedTheme = localStorage.getItem('theme');
+        } catch (error) {
+            savedTheme = null;
+        }
+        if (savedTheme !== 'light' && savedTheme !== 'dark') {
+            savedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <a class="skip-link" id="skip-link" href="#main"></a>
+    <header class="site-header" id="site-header"></header>
+    <main class="page" id="main" tabindex="-1"></main>
+    <footer class="site-footer" id="site-footer"></footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="{% static 'js/translations.js' %}"></script>
+    <script src="{% static 'js/api.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
