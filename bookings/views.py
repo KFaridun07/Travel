@@ -1,7 +1,9 @@
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from accounts.permissions import IsTourist
 from .models import Booking
-from .serializers import BookingSerializer
+from .serializers import BookingActionSerializer, BookingSerializer
 
 
 class BookingViewSet(viewsets.ModelViewSet):
@@ -45,3 +47,25 @@ class BookingViewSet(viewsets.ModelViewSet):
         # цену считает сервер, а не пользователь
         total_price = tour.price * people_count
         serializer.save(user=self.request.user, total_price=total_price)
+
+    # POST /api/bookings/{id}/confirm/
+    @action(detail=True, methods=['post'], serializer_class=BookingActionSerializer)
+    def confirm(self, request, pk=None):
+        # get_object находит только брони, которые этот пользователь может видеть,
+        # поэтому чужой гид получит ошибку 404
+        booking = self.get_object()
+
+        if request.user.role != 'guide' and request.user.role != 'admin':
+            return Response(
+                {'detail': 'Подтвердить бронь может только гид'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        if booking.status != 'pending':
+            return Response(
+                {'detail': 'Подтвердить можно только бронь со статусом pending'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        booking.status = 'confirmed'
+        booking.save()
+        return Response(BookingSerializer(booking).data)

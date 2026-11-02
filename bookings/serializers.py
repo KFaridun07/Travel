@@ -25,3 +25,8 @@ class BookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Не хватает мест. Свободно мест: ' + str(free_places))
 
         return data
+
+
+class BookingActionSerializer(serializers.Serializer):
+    # пустой сериализатор: для confirm и cancel ничего отправлять не нужно
+    pass
