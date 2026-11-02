@@ -8,11 +8,16 @@ class TourSerializer(serializers.ModelSerializer):
     free_places = serializers.SerializerMethodField()
     # средний рейтинг тоже считается в методе
     average_rating = serializers.SerializerMethodField()
+    # source берёт значение из связанной записи
+    place_name = serializers.CharField(source='place.name', read_only=True)
+    place_city = serializers.CharField(source='place.city', read_only=True)
+    guide_name = serializers.CharField(source='guide.username', read_only=True)
 
     class Meta:
         model = Tour
         fields = ('id', 'title', 'description', 'place', 'guide', 'price', 'days',
-                  'start_date', 'max_people', 'image', 'created_at', 'free_places', 'average_rating')
+                  'start_date', 'max_people', 'image', 'created_at', 'free_places', 'average_rating',
+                  'place_name', 'place_city', 'guide_name')
         # гида берём из токена, сам пользователь его не указывает
         read_only_fields = ('guide',)
 
@@ -33,9 +38,11 @@ class TourSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
+    tour_title = serializers.CharField(source='tour.title', read_only=True)
+
     class Meta:
         model = Favorite
-        fields = ('id', 'user', 'tour')
+        fields = ('id', 'user', 'tour', 'tour_title')
         # пользователя берём из токена
         read_only_fields = ('user',)
 
@@ -48,9 +55,11 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+
     class Meta:
         model = Review
-        fields = ('id', 'user', 'tour', 'rating', 'text', 'created_at')
+        fields = ('id', 'user', 'username', 'tour', 'rating', 'text', 'created_at')
         # пользователя берём из токена
         read_only_fields = ('user',)
 

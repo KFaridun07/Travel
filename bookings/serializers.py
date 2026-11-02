@@ -4,9 +4,13 @@ from .models import Booking
 
 
 class BookingSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    tour_title = serializers.CharField(source='tour.title', read_only=True)
+
     class Meta:
         model = Booking
-        fields = ('id', 'user', 'tour', 'people_count', 'total_price', 'status', 'created_at')
+        fields = ('id', 'user', 'username', 'tour', 'tour_title', 'people_count',
+                  'total_price', 'status', 'created_at')
         # эти поля заполняет сервер, а не пользователь
         read_only_fields = ('user', 'total_price', 'status')
 
