@@ -16,8 +16,9 @@ class AIServiceError(Exception):
     pass
 
 
-def ask_groq(content):
+def ask_groq(content, max_tokens=4096):
     # отправляет запрос в Groq и возвращает ответ текстом
+    # max_tokens — самая большая длина ответа
     api_key = os.getenv('GROQ_API_KEY')
     if not api_key:
         raise AIServiceError('Не задан ключ GROQ_API_KEY в файле .env')
@@ -27,7 +28,7 @@ def ask_groq(content):
     try:
         response = client.chat.completions.create(
             model=MODEL,
-            max_completion_tokens=4096,
+            max_completion_tokens=max_tokens,
             # прячем рассуждения модели, нам нужен только готовый ответ
             reasoning_format='hidden',
             messages=[{'role': 'user', 'content': content}],
@@ -66,7 +67,8 @@ def recognize_place(image):
             },
         },
     ]
-    text = ask_groq(content)
+    # для короткого JSON много не нужно, а большой запрос с фото Groq не принимает
+    text = ask_groq(content, max_tokens=800)
 
     # AI мог добавить текст вокруг JSON, поэтому берём часть от { до }
     start = text.find('{')
