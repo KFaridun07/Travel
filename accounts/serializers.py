@@ -32,6 +32,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        # пароль сюда не добавляем, он не должен быть виден в профиле
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'role')
+
+
 class LogoutSerializer(serializers.Serializer):
     # благодаря этому полю Swagger показывает, что нужно отправить refresh
     refresh = serializers.CharField()
