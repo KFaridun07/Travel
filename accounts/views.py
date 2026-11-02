@@ -12,9 +12,11 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
 
-class MeView(generics.RetrieveAPIView):
+class MeView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
+    # GET смотрит профиль, PATCH меняет его (PUT не нужен)
+    http_method_names = ['get', 'patch']
 
     def get_object(self):
         return self.request.user

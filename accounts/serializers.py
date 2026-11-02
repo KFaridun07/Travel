@@ -10,7 +10,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'password', 'role')
+        fields = ('username', 'password', 'role', 'email', 'first_name', 'last_name')
 
     def validate_password(self, value):
         # проверяем пароль по правилам из AUTH_PASSWORD_VALIDATORS в settings.py
@@ -27,7 +27,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password'],
-            role=validated_data.get('role', 'tourist')  # если роль не прислали, будет tourist
+            role=validated_data.get('role', 'tourist'),  # если роль не прислали, будет tourist
+            # эти поля необязательные: если их не прислали, будет пустая строка
+            email=validated_data.get('email', ''),
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', '')
         )
         return user
 
@@ -37,6 +41,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = CustomUser
         # пароль сюда не добавляем, он не должен быть виден в профиле
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'role')
+        # эти поля можно только смотреть: иначе пользователь сам поставил бы себе role admin
+        read_only_fields = ('id', 'username', 'role')
 
 
 class LogoutSerializer(serializers.Serializer):
