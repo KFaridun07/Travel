@@ -9,6 +9,8 @@ load_dotenv()
 
 # эта модель понимает и текст, и картинки
 MODEL = 'qwen/qwen3.8-27b'
+# бесплатный тариф Groq принимает запросы только до 1000 токенов ответа в минуту
+MAX_TOKENS = 900
 
 
 class AIServiceError(Exception):
@@ -16,9 +18,8 @@ class AIServiceError(Exception):
     pass
 
 
-def ask_groq(content, max_tokens=4096):
+def ask_groq(content):
     # отправляет запрос в Groq и возвращает ответ текстом
-    # max_tokens — самая большая длина ответа
     api_key = os.getenv('GROQ_API_KEY')
     if not api_key:
         raise AIServiceError('Не задан ключ GROQ_API_KEY в файле .env')
@@ -28,7 +29,7 @@ def ask_groq(content, max_tokens=4096):
     try:
         response = client.chat.completions.create(
             model=MODEL,
-            max_completion_tokens=max_tokens,
+            max_completion_tokens=MAX_TOKENS,
             # прячем рассуждения модели, нам нужен только готовый ответ
             reasoning_format='hidden',
             messages=[{'role': 'user', 'content': content}],
@@ -45,6 +46,10 @@ def ask_groq(content, max_tokens=4096):
     text = response.choices[0].message.content
     if not text:
         raise AIServiceError('AI вернул пустой ответ, попробуйте ещё раз')
+
+    # ответ не поместился в MAX_TOKENS: честно предупреждаем об этом
+    if response.choices[0].finish_reason == 'length':
+        text = text + '\n\n(Ответ получился слишком длинным и был обрезан)'
     return text
 
 
@@ -67,8 +72,7 @@ def recognize_place(image):
             },
         },
     ]
-    # для короткого JSON много не нужно, а большой запрос с фото Groq не принимает
-    text = ask_groq(content, max_tokens=800)
+    text = ask_groq(content)
 
     # AI мог добавить текст вокруг JSON, поэтому берём часть от { до }
     start = text.find('{')
@@ -84,7 +88,7 @@ def ask_consultant(question, tours_text):
     content = (
         'Ты консультант туристической платформы TravelMate. '
         'Советуй туры ТОЛЬКО из списка ниже. '
-        'Если подходящего тура в списке нет, так и скажи.\n\n'
+        'Если подходящего тура в списке нет, так и скажи. Отвечай кратко.\n\n'
         'Список туров:\n' + tours_text + '\n\n'
         'Вопрос клиента: ' + question
     )
@@ -93,7 +97,8 @@ def ask_consultant(question, tours_text):
 
 def make_trip_plan(city, days, budget, interests):
     content = (
-        'Составь подробный план поездки по дням на русском языке.\n'
+        'Составь короткий план поездки по дням на русском языке: '
+        'на каждый день 2-3 пункта, общая длина до 300 слов.\n'
         'Город: ' + city + '\n'
         'Количество дней: ' + str(days) + '\n'
         'Бюджет: ' + str(budget) + '\n'
