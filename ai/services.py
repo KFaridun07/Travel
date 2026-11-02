@@ -94,3 +94,14 @@ def ask_consultant(question, tours_text):
         'Вопрос клиента: ' + question
     )
     return ask_claude(content)
+
+
+def make_trip_plan(city, days, budget, interests):
+    content = (
+        'Составь подробный план поездки по дням на русском языке.\n'
+        'Город: ' + city + '\n'
+        'Количество дней: ' + str(days) + '\n'
+        'Бюджет: ' + str(budget) + '\n'
+        'Интересы: ' + interests
+    )
+    return ask_claude(content)
