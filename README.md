@@ -1,1 +1,85 @@
-# Travel
+# TravelMate
+
+Туристическая платформа на Django REST Framework. Туристы ищут и бронируют туры, гиды создают туры, а AI узнаёт место по фото, отвечает на вопросы и составляет маршрут поездки.
+
+## Запуск
+
+1. Создать и включить виртуальное окружение (Windows):
+
+   ```
+   python -m venv .myvenv
+   .myvenv\Scripts\activate
+   ```
+
+2. Установить библиотеки:
+
+   ```
+   pip install -r requirements.txt
+   ```
+
+3. Создать файл `.env` рядом с `manage.py` и записать туда ключ Claude API. Пример лежит в `.env.example`. Без ключа работает всё, кроме AI.
+
+   ```
+   ANTHROPIC_API_KEY=your-key-here
+   ```
+
+4. Создать таблицы и админа:
+
+   ```
+   python manage.py migrate
+   python manage.py createsuperuser
+   ```
+
+5. Запустить сервер:
+
+   ```
+   python manage.py runserver
+   ```
+
+6. В админке http://127.0.0.1:8000/admin/ поставить своему суперпользователю роль `Админ` и добавить тестовые данные: места, туры и пользователей.
+
+## Как проверить API
+
+Swagger: http://127.0.0.1:8000/swagger/
+
+1. Выполнить `POST /auth/login/` и скопировать `access`.
+2. Нажать **Authorize** и ввести `Bearer <access>`.
+3. Вызывать нужные адреса.
+
+Токен `access` живёт 30 минут, `refresh` живёт 1 день.
+
+## Роли
+
+| Роль | Что может |
+|---|---|
+| `tourist` | смотрит туры, бронирует, пишет отзывы |
+| `guide` | создаёт и меняет свои туры, подтверждает брони своих туров |
+| `admin` | может всё, добавляет места |
+
+При регистрации можно выбрать `tourist` или `guide`. Роль `admin` выдаётся только через админку.
+
+## Адреса API
+
+Все адреса начинаются с `/api/`.
+
+| Адрес | Что делает |
+|---|---|
+| `POST auth/register/` | регистрация |
+| `POST auth/login/` | вход, возвращает `access` и `refresh` |
+| `POST auth/refresh/` | новый `access` по токену `refresh` |
+| `POST auth/logout/` | выход, `refresh` попадает в чёрный список |
+| `GET, PATCH auth/me/` | мой профиль |
+| `places/` | места. Фильтры: `?city=`, `?search=` |
+| `tours/` | туры. Фильтры: `?city=`, `?price_min=`, `?price_max=`, `?days=`, `?search=` |
+| `favorites/` | моё избранное |
+| `bookings/` | брони. Фильтр: `?status=` |
+| `POST bookings/{id}/confirm/` | гид подтверждает бронь |
+| `POST bookings/{id}/cancel/` | турист отменяет свою бронь |
+| `reviews/` | отзывы. Фильтр: `?tour=` |
+| `POST ai/photo-search/` | поиск места и туров по фото |
+| `POST ai/chat/` | вопрос AI-консультанту |
+| `GET ai/chat/history/` | моя история чата |
+| `POST ai/trip-plan/` | составить маршрут |
+| `GET ai/trip-plans/` | мои сохранённые маршруты |
+
+Места и туры с картинками отправляются как форма (`multipart/form-data`), а не как JSON.
