@@ -17,10 +17,10 @@
    pip install -r requirements.txt
    ```
 
-3. Создать файл `.env` рядом с `manage.py` и записать туда ключ Claude API. Пример лежит в `.env.example`. Без ключа работает всё, кроме AI.
+3. Получить ключ на https://console.groq.com/keys, создать файл `.env` рядом с `manage.py` и записать туда этот ключ. Пример лежит в `.env.example`. Без ключа работает всё, кроме AI.
 
    ```
-   ANTHROPIC_API_KEY=your-key-here
+   GROQ_API_KEY=your-key-here
    ```
 
 4. Создать таблицы и админа:
