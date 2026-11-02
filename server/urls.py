@@ -38,6 +38,7 @@ urlpatterns = [
     path('api/auth/', include('accounts.urls')),
     path('api/', include('places.urls')),
     path('api/', include('tours.urls')),
+    path('api/', include('bookings.urls')),
 
     re_path(
         r'^swagger/$',
