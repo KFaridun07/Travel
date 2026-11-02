@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from places.models import Place
 
@@ -40,6 +40,24 @@ class Favorite(models.Model):
         # база данных не даст добавить один тур в избранное дважды
         constraints = [
             models.UniqueConstraint(fields=['user', 'tour'], name='unique_favorite'),
+        ]
+
+    def __str__(self):
+        return str(self.user) + ' - ' + str(self.tour)
+
+
+class Review(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
+    tour = models.ForeignKey(Tour, on_delete=models.CASCADE, related_name='reviews')
+    # оценка только от 1 до 5
+    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # один пользователь может оставить только один отзыв на тур
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'tour'], name='unique_review'),
         ]
 
     def __str__(self):
