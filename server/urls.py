@@ -24,9 +24,9 @@ from drf_yasg import openapi
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="My API",
+        title="TravelMate API",
         default_version='v1',
-        description="API documentation",
+        description="Туристическая платформа TravelMate",
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
