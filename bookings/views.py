@@ -1,9 +1,10 @@
-from rest_framework import permissions, status, viewsets
+from django.db import IntegrityError, transaction
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from accounts.permissions import IsTourist
 from .models import Booking
-from .serializers import BookingActionSerializer, BookingSerializer
+from .serializers import ALREADY_BOOKED, BookingActionSerializer, BookingSerializer
 
 
 class BookingViewSet(viewsets.ModelViewSet):
@@ -46,7 +47,13 @@ class BookingViewSet(viewsets.ModelViewSet):
         people_count = serializer.validated_data['people_count']
         # цену считает сервер, а не пользователь
         total_price = tour.price * people_count
-        serializer.save(user=self.request.user, total_price=total_price)
+        try:
+            # transaction.atomic: после ошибки базы запрос может продолжать работу
+            with transaction.atomic():
+                serializer.save(user=self.request.user, total_price=total_price)
+        except IntegrityError:
+            # два одновременных запроса: проверку прошли оба, но база пропустила только первый
+            raise serializers.ValidationError(ALREADY_BOOKED)
 
     # POST /api/bookings/{id}/confirm/
     @action(detail=True, methods=['post'], serializer_class=BookingActionSerializer)

@@ -7,6 +7,7 @@ var TRANSLATIONS = {
         themeToLight: 'Включить дневную тему', themeToDark: 'Включить ночную тему', language: 'Язык',
 
         railBack: 'Предыдущее место', railForward: 'Следующее место', openPlace: 'Открыть',
+        alreadyBooked: 'Вы уже забронировали этот тур. Снова забронировать можно после отмены брони.',
         navHome: 'Главная', navBack: 'Назад', navForward: 'Вперёд',
         chatNav: 'Сообщения', chatSearch: 'Поиск', chatPick: 'Выберите диалог слева', chatEmptyText: 'Диалогов пока нет. Откройте бронь и нажмите «Написать».', chatNoMessages: 'Сообщений пока нет', chatNotFound: 'Никого не нашли',
         chatOnlyPeople: 'Сообщения доступны только туристам и гидам', chatOnline: 'в сети', chatOffline: 'не в сети', chatTyping: 'печатает…', chatYou: 'Вы', chatPhoto: 'Фото', chatVoice: 'Голосовое сообщение',
@@ -84,6 +85,7 @@ var TRANSLATIONS = {
         themeToLight: 'Switch to light theme', themeToDark: 'Switch to dark theme', language: 'Language',
 
         railBack: 'Previous place', railForward: 'Next place', openPlace: 'Open',
+        alreadyBooked: 'You have already booked this tour. You can book it again after cancelling the booking.',
         navHome: 'Home', navBack: 'Back', navForward: 'Forward',
         chatNav: 'Messages', chatSearch: 'Search', chatPick: 'Choose a conversation on the left', chatEmptyText: 'No conversations yet. Open a booking and press “Message”.', chatNoMessages: 'No messages yet', chatNotFound: 'Nobody found',
         chatOnlyPeople: 'Messages are available to tourists and guides only', chatOnline: 'online', chatOffline: 'offline', chatTyping: 'typing…', chatYou: 'You', chatPhoto: 'Photo', chatVoice: 'Voice message',
@@ -161,6 +163,7 @@ var TRANSLATIONS = {
         themeToLight: 'Мавзӯи рӯзона', themeToDark: 'Мавзӯи шабона', language: 'Забон',
 
         railBack: 'Ҷойи қаблӣ', railForward: 'Ҷойи навбатӣ', openPlace: 'Кушодан',
+        alreadyBooked: 'Шумо ин сайёҳатро аллакай фармоиш додаед. Пас аз бекор кардани фармоиш метавонед дубора фармоиш диҳед.',
         navHome: 'Асосӣ', navBack: 'Ба қафо', navForward: 'Ба пеш',
         chatNav: 'Паёмҳо', chatSearch: 'Ҷустуҷӯ', chatPick: 'Аз тарафи чап сӯҳбатро интихоб кунед', chatEmptyText: 'Ҳоло сӯҳбат нест. Фармоишро кушоед ва «Навиштан»-ро пахш кунед.', chatNoMessages: 'Ҳоло паём нест', chatNotFound: 'Касе ёфт нашуд',
         chatOnlyPeople: 'Паёмҳо танҳо барои сайёҳон ва роҳбаладон дастрасанд', chatOnline: 'дар шабака', chatOffline: 'берун аз шабака', chatTyping: 'менависад…', chatYou: 'Шумо', chatPhoto: 'Акс', chatVoice: 'Паёми овозӣ',

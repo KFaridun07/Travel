@@ -9,15 +9,23 @@ async function tourPage(id, number) {
     var allTours;
     var place = null;
     var bookings = [];
+    var hasBooking = false;
     try {
         var answers = await Promise.all([api('/tours/' + id + '/'), api('/reviews/?tour=' + id), api('/tours/')]);
         tour = answers[0];
         reviews = answers[1];
         allTours = answers[2];
         place = await api('/places/' + tour.place + '/');
-        // турист может оставить отзыв только с подтверждённой бронью
         if (isRole('tourist')) {
-            bookings = await api('/bookings/?status=confirmed');
+            var myBookings = await api('/bookings/');
+            // турист может оставить отзыв только с подтверждённой бронью
+            bookings = myBookings.filter(function (booking) {
+                return booking.status === 'confirmed';
+            });
+            // повторно забронировать тур нельзя, пока бронь не отменена
+            hasBooking = myBookings.some(function (booking) {
+                return booking.tour === tour.id && booking.status !== 'cancelled';
+            });
         }
     } catch (error) {
         if (number === renderNumber) {
@@ -38,7 +46,7 @@ async function tourPage(id, number) {
         '<p class="lead">' + esc(tour.description) + '</p>' +
         placeBlock(place) +
         reviewsBlock(tour, reviews, bookings) +
-        '</div><aside>' + bookingCard(tour) + '</aside></div>' +
+        '</div><aside>' + bookingCard(tour, hasBooking) + '</aside></div>' +
         relatedBlock(tour, allTours) +
         mobileBookBar(tour);
 
@@ -97,7 +105,7 @@ function placeBlock(place) {
 
 // ---------- Бронирование ----------
 
-function bookingCard(tour) {
+function bookingCard(tour, hasBooking) {
     // сколько мест уже занято: от этого зависит полоска
     var taken = Math.max(0, tour.max_people - tour.free_places);
     var percent = tour.max_people ? Math.round(taken / tour.max_people * 100) : 0;
@@ -107,10 +115,13 @@ function bookingCard(tour) {
         '<div class="price-note">' + esc(t('perPerson')) + '</div>' +
         '<div class="seats"><div class="seats-row"><span>' + esc(t('freePlaces')) + '</span><strong>' + tour.free_places + ' / ' + tour.max_people + '</strong></div>' +
         '<div class="seats-bar' + low + '"><span style="width:' + percent + '%"></span></div></div>' +
-        bookingBlock(tour) + favoriteWideButton(tour) + '</div>';
+        bookingBlock(tour, hasBooking) + favoriteWideButton(tour) + '</div>';
 }
 
-function bookingBlock(tour) {
+function bookingBlock(tour, hasBooking) {
+    if (hasBooking) {
+        return '<div class="stack"><p class="notice">' + esc(t('alreadyBooked')) + '</p><a class="button wide" href="#/bookings">' + esc(t('bookings')) + '</a></div>';
+    }
     if (tourIsOver(tour)) {
         return '<p class="notice">' + esc(t('tourStarted')) + '</p>';
     }

@@ -17,5 +17,15 @@ class Booking(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        constraints = [
+            # отменённая бронь не мешает забронировать этот тур снова
+            models.UniqueConstraint(
+                fields=['user', 'tour'],
+                condition=~models.Q(status='cancelled'),
+                name='unique_active_booking',
+            ),
+        ]
+
     def __str__(self):
         return str(self.user) + ' - ' + str(self.tour)

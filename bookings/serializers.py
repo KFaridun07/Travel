@@ -2,6 +2,8 @@ from django.utils import timezone
 from rest_framework import serializers
 from .models import Booking
 
+ALREADY_BOOKED = 'Вы уже забронировали этот тур'
+
 
 class BookingSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
@@ -13,10 +15,17 @@ class BookingSerializer(serializers.ModelSerializer):
                   'total_price', 'status', 'created_at')
         # эти поля заполняет сервер, а не пользователь
         read_only_fields = ('user', 'total_price', 'status')
+        # повторную бронь проверяем сами в validate: там понятное сообщение
+        validators = []
 
     def validate(self, data):
         tour = data['tour']
         people_count = data['people_count']
+
+        # один турист держит только одну активную бронь на тур
+        user = self.context['request'].user
+        if Booking.objects.filter(user=user, tour=tour).exclude(status='cancelled').exists():
+            raise serializers.ValidationError(ALREADY_BOOKED)
 
         # нельзя бронировать тур, который уже начался
         today = timezone.localdate()
