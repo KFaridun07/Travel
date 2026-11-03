@@ -5,3 +5,5 @@ drf-yasg==1.21.18
 pillow==13.0.0
 groq==1.7.0
 python-dotenv==1.2.4
+channels==4.3.2
+daphne==4.2.3

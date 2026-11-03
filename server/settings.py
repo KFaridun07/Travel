@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # daphne должен быть первым: с ним runserver умеет работать с WebSocket
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,12 +41,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg',
+    'channels',
     'rest_framework_simplejwt.token_blacklist',
     'accounts',
     'places',
     'tours',
     'bookings',
     'ai',
+    'chat',
 
 ]
 
@@ -109,6 +113,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'server.wsgi.application'
+ASGI_APPLICATION = 'server.asgi.application'
+
+# Сообщения между вкладками чата идут через память процесса: хватает одного сервера.
+# Если серверов станет несколько, здесь нужен Redis
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 
 # Database
@@ -157,11 +170,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# Папка css лежит рядом с manage.py, а её адрес остаётся /static/css/
+STATICFILES_DIRS = [('css', BASE_DIR / 'css'), BASE_DIR / 'static']
 
 # Загруженные картинки (фото мест и туров)
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Фото и голосовые из чата: вне media, поэтому прямой ссылки на них нет
+PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media'
 
 
 # Email

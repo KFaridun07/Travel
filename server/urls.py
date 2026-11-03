@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/', include('tours.urls')),
     path('api/', include('bookings.urls')),
     path('api/ai/', include('ai.urls')),
+    path('api/chat/', include('chat.urls')),
 
     re_path(
         r'^swagger/$',
