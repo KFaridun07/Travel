@@ -1,0 +1,53 @@
+services:
+  # Django: API, админка и WebSocket. Снаружи не виден
+  backend:
+    image: travelmate-backend
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    env_file: .env.production
+    environment:
+      DJANGO_DEBUG: "false"
+    volumes:
+      - data:/data
+      - media:/data/media
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  # nginx бэкенда: стоит перед Django и отдаёт картинки из /media/
+  backend-nginx:
+    image: travelmate-backend-nginx
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile.nginx
+    volumes:
+      # только открытые картинки: база и файлы чата этому nginx не видны
+      - media:/data/media:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # nginx фронтенда: единственный, кто виден снаружи
+  frontend:
+    image: travelmate-frontend
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    ports:
+      # на общем сервере порт открыт только для его nginx: FRONTEND_BIND=127.0.0.1:8021
+      - "${FRONTEND_BIND:-80}:80"
+    depends_on:
+      - backend-nginx
+    restart: unless-stopped
+
+volumes:
+  # база и файлы чата: сохраняются при обновлении контейнеров
+  data:
+  # картинки мест и туров
+  media:

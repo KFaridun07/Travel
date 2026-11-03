@@ -1,0 +1,14 @@
+.git
+.myvenv
+.claude
+.vscode
+__pycache__
+*.pyc
+
+# секреты и данные в образ не попадают
+.env
+.env.*
+db.sqlite3
+media
+private_media
+staticfiles

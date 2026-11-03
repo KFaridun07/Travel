@@ -37,6 +37,8 @@ urlpatterns = [
     # главная страница сайта: дальше всё показывает JavaScript
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
     path('admin/', admin.site.urls),
+    # /api/ показывает документацию Swagger
+    path('api/', schema_view.with_ui('swagger', cache_timeout=0), name='api-docs'),
     # все адреса входа и регистрации начинаются с /api/auth/
     path('api/auth/', include('accounts.urls')),
     path('api/', include('places.urls')),

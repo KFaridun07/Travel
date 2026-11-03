@@ -46,6 +46,18 @@
 
 8. Открыть сайт: http://127.0.0.1:8000/
 
+## Запуск в Docker
+
+Скопировать `.env.production.example` в `.env.production`, заполнить и запустить. Сайт откроется на порту из `FRONTEND_BIND`, по умолчанию 80:
+
+```
+docker compose up -d --build
+```
+
+Запросы идут так: `frontend` (nginx с сайтом) → `backend-nginx` (nginx перед Django, отдаёт `/media/`) → `backend` (Django и WebSocket). Адрес `/` показывает сайт, а `/api/` показывает Swagger. База и файлы хранятся в томах `data` и `media` и не пропадают при обновлении контейнеров.
+
+На общем сервере порт открыт только для его nginx: в файле `.env` рядом с `docker-compose.yml` указано `FRONTEND_BIND=127.0.0.1:8021`. Процессор сервера ARM, поэтому образы собираются с `--platform linux/arm64`.
+
 ## Сайт
 
 Сайт написан на обычных HTML, CSS и JavaScript, без библиотек, и работает на том же сервере, что и API:

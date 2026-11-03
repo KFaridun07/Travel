@@ -10,22 +10,39 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# В Docker база и файлы лежат в томе, чтобы не пропасть при обновлении контейнера
+DATA_DIR = Path(os.environ.get('DJANGO_DATA_DIR', BASE_DIR))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
+# На сервере DJANGO_DEBUG=false, на своём компьютере ничего настраивать не нужно
+DEBUG = os.environ.get('DJANGO_DEBUG', 'true').lower() == 'true'
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-_0*p)(8g*!dl6i)wgkx3er6cufq)mk#0k7a9&+7neboo*$ij%6'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
+if not SECRET_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured('На сервере нужно задать DJANGO_SECRET_KEY')
+    SECRET_KEY = 'django-insecure-_0*p)(8g*!dl6i)wgkx3er6cufq)mk#0k7a9&+7neboo*$ij%6'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ALLOWED_HOSTS = [host for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if host]
+CSRF_TRUSTED_ORIGINS = [origin for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',') if origin]
 
-ALLOWED_HOSTS = []
+if not DEBUG:
+    # HTTPS заканчивается раньше Django: о нём сообщает nginx в этом заголовке
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 
 # Application definition
@@ -130,7 +147,7 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DATA_DIR / 'db.sqlite3',
     }
 }
 
@@ -172,13 +189,15 @@ USE_TZ = True
 STATIC_URL = 'static/'
 # Папка css лежит рядом с manage.py, а её адрес остаётся /static/css/
 STATICFILES_DIRS = [('css', BASE_DIR / 'css'), BASE_DIR / 'static']
+# Сюда collectstatic собирает файлы для nginx
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Загруженные картинки (фото мест и туров)
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = DATA_DIR / 'media'
 
 # Фото и голосовые из чата: вне media, поэтому прямой ссылки на них нет
-PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media'
+PRIVATE_MEDIA_ROOT = DATA_DIR / 'private_media'
 
 
 # Email

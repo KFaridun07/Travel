@@ -118,7 +118,7 @@ function renderFooter() {
     byId('site-footer').innerHTML = '<div class="container"><div class="footer-row">' +
         '<div><a class="logo" href="#/">' + logoHtml() + '</a><p>' + esc(t('footerText')) + '</p></div>' +
         '<div><span class="footer-title">' + esc(t('footerTravel')) + '</span><div class="footer-links"><a href="#/tours">' + esc(t('tours')) + '</a><a href="#/places">' + esc(t('places')) + '</a><a href="#/ai">' + esc(t('ai')) + '</a></div></div>' +
-        '<div><span class="footer-title">' + esc(t('footerProject')) + '</span><div class="footer-links"><a href="#/credits">' + esc(t('creditsTitle')) + '</a><a href="/swagger/">' + esc(t('footerApi')) + '</a></div></div>' +
+        '<div><span class="footer-title">' + esc(t('footerProject')) + '</span><div class="footer-links"><a href="#/credits">' + esc(t('creditsTitle')) + '</a><a href="/api/">' + esc(t('footerApi')) + '</a></div></div>' +
         '</div><div class="footer-bottom">TravelMate · ' + new Date().getFullYear() + '</div></div>';
 }
 

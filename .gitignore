@@ -5,3 +5,5 @@ media/
 __pycache__/
 *.pyc
 private_media/
+staticfiles/
+.env.production
