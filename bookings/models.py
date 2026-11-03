@@ -14,7 +14,6 @@ class Booking(models.Model):
     tour = models.ForeignKey(Tour, on_delete=models.CASCADE, related_name='bookings')
     people_count = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
-    # новая бронь всегда ожидает подтверждения
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 

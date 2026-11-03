@@ -4,11 +4,8 @@ from .models import Favorite, Review, Tour
 
 
 class TourSerializer(serializers.ModelSerializer):
-    # это поле считается в методе get_free_places, в базе его нет
     free_places = serializers.SerializerMethodField()
-    # средний рейтинг тоже считается в методе
     average_rating = serializers.SerializerMethodField()
-    # source берёт значение из связанной записи
     place_name = serializers.CharField(source='place.name', read_only=True)
     place_city = serializers.CharField(source='place.city', read_only=True)
     guide_name = serializers.CharField(source='guide.username', read_only=True)
@@ -18,7 +15,6 @@ class TourSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'description', 'place', 'guide', 'price', 'days',
                   'start_date', 'max_people', 'image', 'created_at', 'free_places', 'average_rating',
                   'place_name', 'place_city', 'guide_name')
-        # гида берём из токена, сам пользователь его не указывает
         read_only_fields = ('guide',)
 
     def get_free_places(self, obj):
@@ -31,7 +27,6 @@ class TourSerializer(serializers.ModelSerializer):
             total = total + review.rating
             count = count + 1
 
-        # если отзывов нет, делить на ноль нельзя
         if count == 0:
             return 0
         return round(total / count, 1)
@@ -43,11 +38,9 @@ class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
         fields = ('id', 'user', 'tour', 'tour_title')
-        # пользователя берём из токена
         read_only_fields = ('user',)
 
     def validate_tour(self, value):
-        # проверяем, что этого тура ещё нет в избранном
         user = self.context['request'].user
         if Favorite.objects.filter(user=user, tour=value).exists():
             raise serializers.ValidationError('Этот тур уже в избранном')
@@ -60,17 +53,14 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ('id', 'user', 'username', 'tour', 'rating', 'text', 'created_at')
-        # пользователя берём из токена
         read_only_fields = ('user',)
 
     def validate_tour(self, value):
         user = self.context['request'].user
 
-        # отзыв можно оставить только с подтверждённой бронью этого тура
         if not Booking.objects.filter(user=user, tour=value, status='confirmed').exists():
             raise serializers.ValidationError('Отзыв можно оставить только с подтверждённой бронью этого тура')
 
-        # один отзыв на один тур
         if Review.objects.filter(user=user, tour=value).exists():
             raise serializers.ValidationError('Вы уже оставили отзыв на этот тур')
 
