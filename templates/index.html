@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TravelMate</title>
-    <meta name="description" content="TravelMate: туры, места и AI-помощник для путешествий">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f6f64'/%3E%3Cpath d='M4 25 13 10l5 8 3-4 7 11z' fill='%23fff'/%3E%3C/svg%3E">
+    <meta name="description" content="TravelMate: туры по Таджикистану и Шёлковому пути, места и AI-помощник для путешествий">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%230d7a72'/%3E%3Cpath d='M5 24 13 10.5l4.6 7.2 2.6-3.6L27 24z' fill='%23fff'/%3E%3C/svg%3E">
     <script>
         // ставим тему сразу, чтобы страница не мигала при загрузке
         var savedTheme = null;
@@ -14,22 +14,42 @@
         } catch (error) {
             savedTheme = null;
         }
+        // ночная тема основная, дневную человек включает сам
         if (savedTheme !== 'light' && savedTheme !== 'dark') {
-            savedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            savedTheme = 'dark';
         }
         document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // адрес папки со статикой нужен в JavaScript для фотографий
+        var STATIC_URL = "{% static '' %}";
     </script>
+    <link rel="preload" href="{% static 'fonts/manrope-cyrillic.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
+    <div class="ambient" id="ambient" aria-hidden="true"><div></div><div></div></div>
     <a class="skip-link" id="skip-link" href="#main"></a>
     <header class="site-header" id="site-header"></header>
+    <nav class="side-rail" id="side-rail"></nav>
     <main class="page" id="main" tabindex="-1"></main>
     <footer class="site-footer" id="site-footer"></footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <dialog class="dialog" id="dialog"></dialog>
 
     <script src="{% static 'js/translations.js' %}"></script>
     <script src="{% static 'js/api.js' %}"></script>
+    <script src="{% static 'js/ui.js' %}"></script>
+    <script src="{% static 'js/forms.js' %}"></script>
+    <script src="{% static 'js/cards.js' %}"></script>
+    <script src="{% static 'js/pages/home.js' %}"></script>
+    <script src="{% static 'js/pages/tours.js' %}"></script>
+    <script src="{% static 'js/pages/tour.js' %}"></script>
+    <script src="{% static 'js/pages/places.js' %}"></script>
+    <script src="{% static 'js/pages/trips.js' %}"></script>
+    <script src="{% static 'js/pages/account.js' %}"></script>
+    <script src="{% static 'js/pages/assistant.js' %}"></script>
+    <script src="{% static 'js/pages/credits.js' %}"></script>
+    <script src="{% static 'js/pages/chat.js' %}"></script>
     <script src="{% static 'js/app.js' %}"></script>
 </body>
 </html>

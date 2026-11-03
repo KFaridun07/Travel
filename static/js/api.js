@@ -112,6 +112,19 @@ async function sendRequest(path, options) {
     return fetch('/api' + path, settings);
 }
 
+// Закрытый файл: браузер не может приложить токен к обычной картинке, поэтому качаем сами
+async function apiBlob(path) {
+    var response = await sendRequest(path, {});
+    if (response.status === 401 && readStorage('refresh')) {
+        await refreshTokens();
+        response = await sendRequest(path, {});
+    }
+    if (!response.ok) {
+        throw new Error(t('chatFileError'));
+    }
+    return response.blob();
+}
+
 // Главная функция: отправляет запрос и возвращает данные или бросает ошибку
 async function api(path, options) {
     if (!options) {
@@ -151,6 +164,8 @@ async function api(path, options) {
     if (!response.ok) {
         var apiError = new Error(errorText(data));
         apiError.status = response.status;
+        // по этим данным форма покажет ошибку рядом с нужным полем
+        apiError.data = data;
         throw apiError;
     }
     return data;
